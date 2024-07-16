@@ -4,7 +4,6 @@ import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { SymbolView } from "expo-symbols";
 import { Colors } from "@/constants/Colors";
 import { useCameraPermissions, useMicrophonePermissions } from "expo-camera";
 import { usePermissions } from "expo-media-library";
@@ -54,26 +53,13 @@ export default function OnboardingScreen() {
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
       headerImage={
-        <SymbolView
-          name="camera.circle"
-          size={250}
-          type="hierarchical"
-          tintColor={Colors.dark.snapPrimary}
-          animationSpec={{
-            effect: {
-              type: "bounce",
-            },
+        <Image
+          source={require("../assets/icons/camera.png")}
+          style={{
+            width: 250,
+            height: 250,
+            tintColor: Colors.dark.snapPrimary,
           }}
-          fallback={
-            <Image
-              source={require("../assets/icons/camera.png")}
-              style={{
-                width: 250,
-                height: 250,
-                tintColor: Colors.dark.snapPrimary,
-              }}
-            />
-          }
         />
       }
     >

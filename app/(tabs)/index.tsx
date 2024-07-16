@@ -1,70 +1,113 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import * as React from "react";
+import { Image, StyleSheet, Platform, View } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { HelloWave } from "@/components/HelloWave";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+
+import {
+  BarcodeScanningResult,
+  CameraMode,
+  CameraView,
+  FlashMode,
+} from "expo-camera";
+import * as WebBrowser from "expo-web-browser";
+import BottomRowTools from "@/components/BottomRowTools";
+import MainRowActions from "@/components/MainRowActions";
+import QRCodeButton from "@/components/QRCodeButton";
+import CameraTools from "@/components/CameraTools";
+import { SafeAreaView } from "react-native-safe-area-context";
+import PictureView from "@/components/PictureView";
 
 export default function HomeScreen() {
+  const cameraRef = React.useRef<CameraView>(null);
+  const [cameraMode, setCameraMode] = React.useState<CameraMode>("picture");
+  const [qrCodeDetected, setQrCodeDetected] = React.useState<string>("");
+  const [isBrowsing, setIsBrowsing] = React.useState<boolean>(false);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const [cameraZoom, setCameraZoom] = React.useState<number>(0);
+  const [cameraTorch, setCameraTorch] = React.useState<boolean>(false);
+  const [cameraFlash, setCameraFlash] = React.useState<FlashMode>("off");
+  const [cameraFacing, setCameraFacing] = React.useState<"front" | "back">(
+    "back"
+  );
+
+  const [picture, setPicture] = React.useState<string>("");
+
+  async function handleTakePicture() {
+    const response = await cameraRef.current?.takePictureAsync({});
+    setPicture(response!.uri);
+  }
+
+  async function handleOpenQRCode() {
+    setIsBrowsing(true);
+    const browserResult = await WebBrowser.openBrowserAsync(qrCodeDetected, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
+    });
+    if (browserResult.type === "cancel") {
+      setIsBrowsing(false);
+    }
+  }
+
+  function handleBarcodeScanned(scanningResult: BarcodeScanningResult) {
+    if (scanningResult.data) {
+      console.log(scanningResult.data);
+      setQrCodeDetected(scanningResult.data);
+    }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setQrCodeDetected("");
+    }, 1000);
+  }
+
+  if (isBrowsing) return <></>;
+  if (picture) return <PictureView picture={picture} setPicture={setPicture} />;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={{ flex: 1 }}>
+      <CameraView
+        ref={cameraRef}
+        mode={cameraMode}
+        zoom={0}
+        flash={cameraFlash}
+        enableTorch={cameraTorch}
+        facing={cameraFacing}
+        barcodeScannerSettings={{
+          barcodeTypes: ["qr"],
+        }}
+        onBarcodeScanned={handleBarcodeScanned}
+        style={{ flex: 1 }}
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={{ flex: 1 }}>
+            {qrCodeDetected ? (
+              <QRCodeButton handleOpenQRCode={handleOpenQRCode} />
+            ) : null}
+            <CameraTools
+              cameraZoom={cameraZoom}
+              cameraFlash={cameraFlash}
+              cameraTorch={cameraTorch}
+              setCameraZoom={setCameraZoom}
+              setCameraFacing={setCameraFacing}
+              setCameraTorch={setCameraTorch}
+              setCameraFlash={setCameraFlash}
+            />
+            <MainRowActions
+              cameraMode={cameraMode}
+              handleTakePicture={handleTakePicture}
+              isRecording={false}
+            />
+            <BottomRowTools
+              setCameraMode={setCameraMode}
+              cameraMode={cameraMode}
+            />
+          </View>
+        </SafeAreaView>
+      </CameraView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
