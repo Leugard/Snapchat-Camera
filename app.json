@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "snapchat",
+    "name": "Snapchat Camera",
     "slug": "snapchat",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -37,6 +37,14 @@
     "plugins": ["expo-router", "expo-video"],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4d5e0a28-b6da-4121-bca4-0950b0eb97ba"
+      }
     }
   }
 }
