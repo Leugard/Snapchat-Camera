@@ -59,7 +59,7 @@ export default function MainRowActions({
               ? require("../assets/icons/circle.png")
               : isRecording
               ? require("../assets/icons/record-circle.png")
-              : require("../assets/icons/circle.png")
+              : require("../assets/icons/record.png")
           }
           tintColor={isRecording ? Colors.light.snapPrimary : "white"}
           style={{ width: 90, height: 90 }}
